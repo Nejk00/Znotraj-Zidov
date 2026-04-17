@@ -19,6 +19,15 @@ public class DoorInteraction : MonoBehaviour
     private bool openning = false;
 
 
+    private void OnTriggerEnter(Collider other)
+    {
+        #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+        #else
+                        Application.Quit();
+        #endif
+    }
+
     private void Update()
     {
         float distance = Vector3.Distance(enemy.transform.position, transform.position);
@@ -37,11 +46,9 @@ public class DoorInteraction : MonoBehaviour
     
     public void openClose(float angle)
     {
-        // Stop any current animation
         if (currentAnimation != null)
             StopCoroutine(currentAnimation);
         
-        // Determine target rotation
         isOpen = !isOpen;
         Quaternion targetRotation;
         
@@ -56,7 +63,6 @@ public class DoorInteraction : MonoBehaviour
             Debug.Log("Closing door");
         }
         
-        // Start new animation
         currentAnimation = StartCoroutine(AnimateDoor(targetRotation));
     }
     
@@ -78,7 +84,6 @@ public class DoorInteraction : MonoBehaviour
             yield return null;
         }
         
-        // Ensure we end exactly at target
         transform.parent.localRotation = targetRotation;
         currentAnimation = null;
     }

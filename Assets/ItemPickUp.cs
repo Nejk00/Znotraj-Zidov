@@ -5,10 +5,7 @@ using UnityEngine;
 public class ItemPickUp : MonoBehaviour
 {
     public GameObject player;
-    public Transform holdPos; // Keep this for backward compatibility
-    public Transform rightHandHold;  // New: position for right-hand hold
-    public Transform leftHandHold;   // New: position for left-hand hold
-    public Transform backHold;       // New: position for back/carrying
+    public Transform holdPos;
     public float throwForce = 500f;
     public float pickUpRange = 5f;
     public GameObject heldObj;
@@ -16,25 +13,11 @@ public class ItemPickUp : MonoBehaviour
     private bool canDrop = true;
     private int LayerNumber;
     
-    // New: Which hold style to use
-    public enum HoldStyle
-    {
-        RightHand,
-        LeftHand,
-        Back,
-        Custom // Uses original holdPos
-    }
-    
-    public HoldStyle currentHoldStyle = HoldStyle.RightHand;
-    private HoldStyle lastHoldStyle;
-    
-    // New: Smoothing for hold position transitions
     public float holdSmoothTime = 0.1f;
     private Vector3 holdVelocity = Vector3.zero;
     
-    // New: Clipping prevention settings
     public float clipCheckRadius = 0.2f;
-    public LayerMask clipCheckMask = ~0; // Everything by default
+    public LayerMask clipCheckMask = ~0;
     public float autoAdjustSpeed = 5f;
     
     public PlayerInputActions inputActions;
@@ -46,11 +29,6 @@ public class ItemPickUp : MonoBehaviour
         inputActions.Enable();
         LayerNumber = LayerMask.NameToLayer("holdLayer");
         playerLookScript = player.GetComponent<PlayerLook>();
-        
-        // If custom holds aren't assigned, fall back to holdPos
-        if (rightHandHold == null) rightHandHold = holdPos;
-        if (leftHandHold == null) leftHandHold = holdPos;
-        if (backHold == null) backHold = holdPos;
     }
     
     void Update()
@@ -80,14 +58,6 @@ public class ItemPickUp : MonoBehaviour
         
         if (heldObj != null)
         {
-            // Check if we need to change hold style
-            if (lastHoldStyle != currentHoldStyle)
-            {
-                lastHoldStyle = currentHoldStyle;
-                // Reparent to new hold position
-                heldObj.transform.parent = GetCurrentHoldTransform();
-            }
-            
             MoveObject();
             
             if (inputActions.Player.Throw.WasPressedThisFrame() && canDrop == true)
@@ -96,30 +66,6 @@ public class ItemPickUp : MonoBehaviour
                 ThrowObject();
             }
         }
-    }
-    
-    // New: Get the current hold transform based on style
-    Transform GetCurrentHoldTransform()
-    {
-        switch (currentHoldStyle)
-        {
-            case HoldStyle.RightHand:
-                return rightHandHold;
-            case HoldStyle.LeftHand:
-                return leftHandHold;
-            case HoldStyle.Back:
-                return backHold;
-            case HoldStyle.Custom:
-            default:
-                return holdPos;
-        }
-    }
-    
-    // New: Cycle through hold styles
-    void CycleHoldStyle()
-    {
-        int nextStyle = ((int)currentHoldStyle + 1) % System.Enum.GetValues(typeof(HoldStyle)).Length;
-        currentHoldStyle = (HoldStyle)nextStyle;
     }
     
     void PickUpObject(GameObject pickUpObj)
@@ -131,18 +77,13 @@ public class ItemPickUp : MonoBehaviour
             heldObjRb = pickUpObj.GetComponent<Rigidbody>();
             heldObjRb.isKinematic = true;
             
-            // Parent to current hold transform
-            Transform targetHold = GetCurrentHoldTransform();
-            heldObj.transform.parent = targetHold;
+            heldObj.transform.parent = holdPos;
             
-            // Reset local position and rotation for clean attachment
             heldObj.transform.localPosition = Vector3.zero;
             heldObj.transform.localRotation = Quaternion.identity;
             
             heldObj.layer = LayerNumber;
             Physics.IgnoreCollision(heldObj.GetComponent<Collider>(), player.GetComponent<Collider>(), true);
-            
-            lastHoldStyle = currentHoldStyle;
         }
     }
     
@@ -157,72 +98,51 @@ public class ItemPickUp : MonoBehaviour
     
     void MoveObject()
     {
-        Transform targetHold = GetCurrentHoldTransform();
-        
-        // New: Check for clipping at the hold position
-        if (IsPositionClipping(targetHold.position))
+        if (IsPositionClipping(holdPos.position))
         {
-            // If clipping, either adjust or switch to back hold automatically
-            if (currentHoldStyle != HoldStyle.Back)
-            {
-                // Auto-switch to back carry to prevent clipping
-                currentHoldStyle = HoldStyle.Back;
-                heldObj.transform.parent = backHold;
-            }
-            else
-            {
-                // Even back is clipping? Try to push object forward slightly
-                Vector3 safePos = FindSafePosition(targetHold.position);
-                heldObj.transform.position = Vector3.SmoothDamp(
-                    heldObj.transform.position, 
-                    safePos, 
-                    ref holdVelocity, 
-                    holdSmoothTime
-                );
-                return;
-            }
+            Vector3 safePos = FindSafePosition(holdPos.position);
+            heldObj.transform.position = Vector3.SmoothDamp(
+                heldObj.transform.position, 
+                safePos, 
+                ref holdVelocity, 
+                holdSmoothTime
+            );
+            return;
         }
         
-        // Smoothly move to hold position
         heldObj.transform.position = Vector3.SmoothDamp(
             heldObj.transform.position, 
-            targetHold.position, 
+            holdPos.position, 
             ref holdVelocity, 
             holdSmoothTime
         );
         
-        // Match rotation of hold transform
-        heldObj.transform.rotation = targetHold.rotation;
+        heldObj.transform.rotation = holdPos.rotation;
     }
     
-    // New: Check if a position is clipping through geometry
     bool IsPositionClipping(Vector3 position)
     {
-        // Check sphere overlap at the position
         Collider[] colliders = Physics.OverlapSphere(position, clipCheckRadius, clipCheckMask);
         
         foreach (Collider col in colliders)
         {
-            // Ignore the held object and the player
             if (col.gameObject != heldObj && col.gameObject != player)
             {
-                return true; // Clipping detected
+                return true;
             }
         }
         return false;
     }
     
-    // New: Find a safe position near the target
     Vector3 FindSafePosition(Vector3 targetPos)
     {
-        // Try positions along camera forward direction
         Vector3[] offsets = new Vector3[]
         {
             Vector3.zero,
-            transform.forward * 0.3f,  // Push forward
-            transform.forward * -0.2f, // Pull back
-            Vector3.up * 0.2f,          // Lift up
-            Vector3.down * 0.2f          // Lower down
+            transform.forward * 0.3f,
+            transform.forward * -0.2f,
+            Vector3.up * 0.2f,
+            Vector3.down * 0.2f
         };
         
         foreach (Vector3 offset in offsets)
@@ -234,7 +154,6 @@ public class ItemPickUp : MonoBehaviour
             }
         }
         
-        // If all positions clip, return original + slight forward push
         return targetPos + (transform.forward * 0.3f);
     }
     

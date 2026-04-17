@@ -29,7 +29,7 @@ public class EnemyController : MonoBehaviour
     private float _timeSinceLostPlayer;
     public LayerMask layers;
     private Coroutine _waitCoroutine;
-    private Quaternion _startRotation; // Store the starting rotation at the patrol point
+    private Quaternion _startRotation;
 
     private void OnDrawGizmos()
     {
@@ -48,17 +48,15 @@ public class EnemyController : MonoBehaviour
     {
         _isWaiting = true;
         _agent.isStopped = true;
-        
-        // Store the starting rotation when we begin waiting at this patrol point
+    
         _startRotation = transform.rotation;
     
         float elapsedTime = 0f;
-        float lookSpeed = 90f; // Degrees per second
-        float maxAngle = 90f; // Maximum angle to look left/right
+        float lookSpeed = 90f;
+        float maxAngle = 90f;
         
         while (elapsedTime < patrolWaitTime)
         {
-            // Check for player EVERY frame during the wait
             if (CanSeePlayer())
             {
                 print("following");
@@ -69,12 +67,8 @@ public class EnemyController : MonoBehaviour
                 yield break;
             }
     
-            // Smoothly look left and right - FIXED: Use a proper sine wave for rotation
-            // This creates a smooth back-and-forth motion from -maxAngle to +maxAngle
-            float angle = Mathf.Sin(elapsedTime * Mathf.PI * 0.5f) * maxAngle; // Adjust speed with multiplier
-            // Alternative: use this for faster looking: float angle = Mathf.Sin(elapsedTime * 2f) * maxAngle;
+            float angle = Mathf.Sin(elapsedTime * Mathf.PI * 0.5f) * maxAngle;
             
-            // Apply rotation relative to the starting rotation
             Quaternion targetRotation = _startRotation * Quaternion.Euler(0, angle, 0);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
     
@@ -82,7 +76,6 @@ public class EnemyController : MonoBehaviour
             yield return null;
         }
     
-        // Smoothly return to original rotation
         float resetTime = 0f;
         float resetDuration = 0.5f;
         Quaternion startRot = transform.rotation;
@@ -90,7 +83,6 @@ public class EnemyController : MonoBehaviour
     
         while (resetTime < resetDuration)
         {
-            // Check for player during reset rotation
             if (CanSeePlayer())
             {
                 _state = EnemyState.Following;
@@ -105,7 +97,6 @@ public class EnemyController : MonoBehaviour
             yield return null;
         }
         
-        // Ensure we end at exactly the start rotation
         transform.rotation = _startRotation;
     
         _agent.isStopped = false;
@@ -120,7 +111,6 @@ public class EnemyController : MonoBehaviour
         if (patrolPoints.Length == 0) return;
         if (!_agent.pathPending && _agent.remainingDistance <= stopAtDistance)
         {
-            // Stop any existing coroutine before starting a new one
             if (_waitCoroutine != null)
             {
                 StopCoroutine(_waitCoroutine);
@@ -179,7 +169,6 @@ public class EnemyController : MonoBehaviour
                         _state = EnemyState.Patrolling;
                         _isWaiting = false;
                         
-                        // Stop any active waiting coroutine
                         if (_waitCoroutine != null)
                         {
                             StopCoroutine(_waitCoroutine);
@@ -259,7 +248,6 @@ public class EnemyController : MonoBehaviour
 
     private void OnDisable()
     {
-        // Clean up coroutine if enemy is disabled
         if (_waitCoroutine != null)
         {
             StopCoroutine(_waitCoroutine);
@@ -269,7 +257,6 @@ public class EnemyController : MonoBehaviour
     
     private void OnEnable()
     {
-        // Reset state when re-enabled
         _isWaiting = false;
         _timeSinceLostPlayer = 0;
         if (_agent != null)

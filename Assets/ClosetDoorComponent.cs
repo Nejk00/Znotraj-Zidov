@@ -26,7 +26,6 @@ public class ClosetDoorInteraction : MonoBehaviour
     {
         closedRotation = transform.localRotation;
         
-        // Calculate open rotation based on hinge side and direction
         float actualOpenAngle = openAngle;
         
         if (isLeftHinged)
@@ -44,7 +43,6 @@ public class ClosetDoorInteraction : MonoBehaviour
         
         isOpen = !isOpen;
         
-        // Handle double doors
         if (isDoubleDoor && otherDoor != null && !otherDoor.IsAnimating())
         {
             otherDoor.OpenClose();

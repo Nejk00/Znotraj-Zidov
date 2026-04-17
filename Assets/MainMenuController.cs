@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class MainMenuController : MonoBehaviour
 {
     [Header("Scene Settings")]
-    [SerializeField] private string gameSceneName = "SampleScene";  // ← MUST match your game scene name EXACTLY
+    [SerializeField] private string gameSceneName = "SampleScene";
     
     
     private void OnHorrorHover(MouseEnterEvent evt)
@@ -13,13 +13,6 @@ public class MainMenuController : MonoBehaviour
         var button = evt.target as Button;
         if (button != null)
         {
-            // Rahlo tresenje gumba (jezivo)
-        
-            // Random pitch sound (če imaš zvok)
-            // audioSource.pitch = Random.Range(0.8f, 1.2f);
-            // audioSource.PlayOneShot(hoverSound);
-        
-            // Spremeni barvo naključno
             StartCoroutine(FlickerButton(button));
         }
     }
@@ -31,7 +24,6 @@ public class MainMenuController : MonoBehaviour
     
         while (elapsed < 0.3f)
         {
-            // Naključno utripanje
             float intensity = Random.Range(0.7f, 1f);
             button.style.color = new Color(
                 originalColor.r * intensity,
@@ -101,7 +93,6 @@ public class MainMenuController : MonoBehaviour
     {
         Debug.Log("Loading game scene...");
     
-        // Start loading asynchronously
         StartCoroutine(LoadGameScene());
     }
 
@@ -109,17 +100,14 @@ public class MainMenuController : MonoBehaviour
     {
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(gameSceneName);
     
-        // Don't activate the scene until fully loaded
         asyncLoad.allowSceneActivation = false;
     
-        // Wait for loading to reach 90%
         while (asyncLoad.progress < 0.9f)
         {
             Debug.Log($"Loading progress: {asyncLoad.progress * 100}%");
             yield return null;
         }
     
-        // Show "Press any key to continue" or just activate
         asyncLoad.allowSceneActivation = true;
     }
     
