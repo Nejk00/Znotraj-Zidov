@@ -1,0 +1,21 @@
+Button {
+    //transition: all 0.2s ease;
+}
+
+Button:hover {
+    background-color: rgb(80, 50, 80) !important;
+    color: rgb(255, 200, 200) !important;
+    scale: 1.02;
+}
+
+#ResumeButton:hover {
+    background-color: rgb(60, 120, 60) !important;
+}
+
+#MainMenuButton:hover {
+    background-color: rgb(100, 60, 40) !important;
+}
+
+#QuitButton:hover {
+    background-color: rgb(140, 40, 40) !important;
+}

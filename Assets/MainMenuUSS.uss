@@ -1,0 +1,17 @@
+/* Psihološki horror hover - subtilen, jeziv */
+Button {
+    //transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+Button:hover {
+    background-color: rgba(45, 45, 55, 0.95) !important;
+    color: rgb(220, 220, 240) !important;
+    letter-spacing: 3px;
+    padding-left: 20px;
+}
+
+#PlayButton:hover {
+    background-color: rgba(70, 70, 90, 0.95) !important;
+    color: rgb(255, 255, 255) !important;
+    letter-spacing: 6px;
+}
