@@ -21,6 +21,7 @@ public class SlidingBookshelf : MonoBehaviour
     
     public void ToggleBookshelf()
     {
+        SoundManager soundManager = FindObjectOfType<SoundManager>();
         if (isMoving) return;
         
         if (isOpen)
@@ -28,6 +29,7 @@ public class SlidingBookshelf : MonoBehaviour
         else
             StartCoroutine(SlideTo(openPosition));
             
+        soundManager.PlaySlidingDoorSound(transform.position);
         isOpen = !isOpen;
     }
     

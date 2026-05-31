@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,8 +15,11 @@ public class PlayerRaycast : MonoBehaviour
     public LayerMask layers;
     public PlayerInputActions inputActions;
     public makeInteractable face;
+    public TextMeshProUGUI InteractionPrompt;
+    public GameObject leftClick;
     
     private ItemPickUp itemPickUp;
+    private string Text = "Press[E] to interact";
     
     
     private void OnDrawGizmos()
@@ -38,13 +42,20 @@ public class PlayerRaycast : MonoBehaviour
 
     void Update()
     {
+        Text = "Press [E] to interact";
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, interactionRange, layers))
         {
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Interactable"))
             {
                 crosshair.SetActive(true);
-
+                
+                if (hit.collider.gameObject.tag == "canPickUp")
+                {
+                    Text = "";
+                    leftClick.SetActive(true);
+                }
+                InteractionPrompt.text = Text;
                 // Check for DoorInteraction component
                 DoorInteraction door = hit.collider.gameObject.GetComponent<DoorInteraction>();
                 if (door != null)
@@ -146,15 +157,22 @@ public class PlayerRaycast : MonoBehaviour
                         plunger.ApplyPlungerForce(hit.collider.gameObject);
                     }
                 }
+
+                    
             }
             else
             {
                 crosshair.SetActive(false);
+                Text = "Press[E] to interact";
+                leftClick.SetActive(false);
             }
         }
         else
         {
             crosshair.SetActive(false);
+            Text = "Press[E] to interact";
+            leftClick.SetActive(false);
         }
+        
     }
 }

@@ -15,6 +15,15 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private Transform[] patrolPoints;
     [SerializeField] private float attackRange;
+    
+    [Header("Audio")]
+    [SerializeField] private float patrolFootstepInterval = 0.6f;  // Slower when patrolling
+    [SerializeField] private float chaseFootstepInterval = 0.3f;   // Faster when chasing
+    [SerializeField] private float footstepVolume = 0.4f;
+    
+    [Header("Movement Speeds")]
+    [SerializeField] private float patrolSpeed = 2f;    // Slow walking speed
+    [SerializeField] private float chaseSpeed = 5f; 
 
     private float patrolWaitTime = 3f;
     private float stopAtDistance = 1f;
@@ -22,6 +31,7 @@ public class EnemyController : MonoBehaviour
     public float viewAngle = 90f;
     private float lostPlayerTime = 3f;
 
+    private float footstepTimer;
     private NavMeshAgent _agent;
     private int _currentPatrolIndex;
     private bool _isWaiting;
@@ -136,6 +146,9 @@ public class EnemyController : MonoBehaviour
     private void Update()
     {
         if (player == null) return;
+
+        UpdateMovementSpeed();
+        UpdateFootstepSounds();
         
         var distanceToPlayer = Vector3.Distance(player.position, transform.position);
 
@@ -155,11 +168,11 @@ public class EnemyController : MonoBehaviour
                 FollowPlayer();
                 if (distanceToPlayer <= attackRange)
                 {
-                    #if UNITY_EDITOR
-                        UnityEditor.EditorApplication.isPlaying = false;
-                    #else
-                        Application.Quit();
-                    #endif
+                    GameOverController gameOver = FindObjectOfType<GameOverController>();
+                    if (gameOver != null)
+                    {
+                        gameOver.TriggerLose();
+                    }
                 }
                 if (!CanSeePlayer())
                 {
@@ -244,6 +257,44 @@ public class EnemyController : MonoBehaviour
         }
         _currentPatrolIndex = closestIndex;
         _agent.SetDestination(patrolPoints[_currentPatrolIndex].position);
+    }
+    
+    private void UpdateFootstepSounds()
+    {
+        bool isMoving = _agent.velocity.magnitude > 0.5f;
+    
+        if (isMoving)
+        {
+            if (footstepTimer <= 0f)
+            {
+                // Pass whether enemy is chasing or patrolling
+                bool isChasing = (_state == EnemyState.Following);
+                SoundManager.Instance?.PlayEnemyFootstep(transform.position, isChasing, footstepVolume);
+            
+                // Use different intervals based on state
+                float currentInterval = isChasing ? chaseFootstepInterval : patrolFootstepInterval;
+                footstepTimer = currentInterval;
+            }
+            else
+            {
+                footstepTimer -= Time.deltaTime;
+            }
+        }
+        else
+        {
+            footstepTimer = 0f;
+        }
+    }
+    private void UpdateMovementSpeed()
+    {
+        if (_state == EnemyState.Following)
+        {
+            _agent.speed = chaseSpeed;
+        }
+        else
+        {
+            _agent.speed = patrolSpeed;
+        }
     }
 
     private void OnDisable()

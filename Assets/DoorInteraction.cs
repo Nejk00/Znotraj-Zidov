@@ -8,7 +8,7 @@ public class DoorInteraction : MonoBehaviour
     public bool isLockedByKey;
     public bool isLockedByKeycode;
     public GameObject requiredKey;
-    public GameObject enemy;
+    public GameObject enemy = null;
     public float enemyOpenDistance;
     
     [Header("Animation Settings")] public float openSpeed = 2f;
@@ -17,16 +17,7 @@ public class DoorInteraction : MonoBehaviour
     private Quaternion closedRotation;
     private Coroutine currentAnimation;
     private bool openning = false;
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-        #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-        #else
-                        Application.Quit();
-        #endif
-    }
+    
 
     private void Update()
     {
@@ -55,12 +46,10 @@ public class DoorInteraction : MonoBehaviour
         if (isOpen)
         {
             targetRotation = Quaternion.Euler(0, angle, 0);
-            Debug.Log($"Opening door to {angle} degrees");
         }
         else
         {
             targetRotation = closedRotation;
-            Debug.Log("Closing door");
         }
         
         currentAnimation = StartCoroutine(AnimateDoor(targetRotation));
@@ -90,7 +79,8 @@ public class DoorInteraction : MonoBehaviour
     
     public void TryOpenClose(float playerAngle, GameObject heldObject)
     {
-        float doorAngle = (playerAngle - 180 > 90) ? -openAngle : openAngle;
+        SoundManager soundManager = FindObjectOfType<SoundManager>();
+        float doorAngle = (playerAngle - 180 > 90) ? openAngle : -openAngle;
         
         if (isLockedByKey ||  isLockedByKeycode)
         {
@@ -106,11 +96,13 @@ public class DoorInteraction : MonoBehaviour
             {
                 Debug.Log("Door is locked. You need a key!");
                 StartCoroutine(PlayLockedJiggle());
+                soundManager.PlayLockedSound(transform.position);
             }
         }
         else
         {
             openClose(doorAngle);
+            soundManager.PlayDoorSound(transform.position);
         }
     }
     

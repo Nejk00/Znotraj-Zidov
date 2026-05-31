@@ -5,10 +5,12 @@ public class EndGame : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-            #if UNITY_EDITOR
-                    UnityEditor.EditorApplication.isPlaying = false;
-            #else
-                            Application.Quit();
-            #endif
+        if (other.CompareTag("Player"))
+        {
+            print("Player has won");
+            GameOverController gameOver = FindObjectOfType<GameOverController>();
+            if (gameOver != null)
+                gameOver.TriggerWin();
+        }
     }
 }

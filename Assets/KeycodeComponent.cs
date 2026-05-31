@@ -13,6 +13,7 @@ public class KeycodeComponent : MonoBehaviour
     [SerializeField]private NoteComponent note;
     [SerializeField]private DoorInteraction Door;
     [SerializeField]public GameObject UI;
+    [SerializeField]public float closeDelay;
     private string code;
     private PlayerInputActions inputActions;
 
@@ -36,9 +37,27 @@ public class KeycodeComponent : MonoBehaviour
         {
             displayText.text = "CORRECT";
             Door.isLockedByKeycode = false;
+            StartCoroutine(CloseUIAfterDelay());
         }
-        else{
+        else
+        {
             displayText.text = "INVALID";
+            StartCoroutine(ClearInvalidMessage());
+        }
+    }
+
+    private System.Collections.IEnumerator CloseUIAfterDelay()
+    {
+        yield return new WaitForSeconds(closeDelay);
+        UI.SetActive(false);
+    }
+
+    private System.Collections.IEnumerator ClearInvalidMessage()
+    {
+        yield return new WaitForSeconds(1f);
+        if (displayText.text == "INVALID")
+        {
+            displayText.text = ""; // Or reset to original text
         }
     }
 

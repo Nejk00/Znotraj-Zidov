@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="CreditsContainer" style="flex-grow: 1; background-color: rgb(5, 5, 8);">
+        <ui:VisualElement style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(30, 30, 40, 0.6);"/>
+        
+        <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center;">
+            <ui:VisualElement style="width: 500px; background-color: rgba(10, 10, 15, 0.95); padding: 40px; border-width: 1px; border-color: rgba(80, 80, 100, 0.5);">
+                
+                <ui:Label text="// CREDITS //" style="font-size: 36px; -unity-text-align: center; color: rgb(130, 130, 150); margin-bottom: 30px; letter-spacing: 8px;"/>
+                
+                <ui:Label text="GAME DESIGN" style="font-size: 14px; color: rgb(100, 100, 120); -unity-text-align: center; margin-bottom: 5px;"/>
+                <ui:Label text="Nejc Gaber" style="font-size: 20px; color: rgb(160, 160, 180); -unity-text-align: center; margin-bottom: 20px;"/>
+                
+                <ui:Label text="PROGRAMMING" style="font-size: 14px; color: rgb(100, 100, 120); -unity-text-align: center; margin-bottom: 5px;"/>
+                <ui:Label text="Nejc Gaber" style="font-size: 20px; color: rgb(160, 160, 180); -unity-text-align: center; margin-bottom: 20px;"/>
+                
+                <ui:Label text="ART" style="font-size: 14px; color: rgb(100, 100, 120); -unity-text-align: center; margin-bottom: 5px;"/>
+                <ui:Label text="Nejc Gaber" style="font-size: 20px; color: rgb(160, 160, 180); -unity-text-align: center; margin-bottom: 20px;"/>
+                
+                <ui:Label text="SPECIAL THANKS" style="font-size: 14px; color: rgb(100, 100, 120); -unity-text-align: center; margin-bottom: 5px;"/>
+                <ui:Label text="MENTOR - Nataša Makarovič" style="font-size: 16px; color: rgb(140, 140, 160); -unity-text-align: center; margin-bottom: 30px; font-style: italic;"/>
+                
+                <ui:Button name="BackButton" text="[ BACK ]" style="font-size: 20px; padding: 12px; background-color: rgba(20, 20, 25, 0.95); color: rgb(140, 140, 160); border-width: 0;"/>
+                
+                <ui:Label text="there is no turning back..." style="margin-top: 20px; color: rgba(150, 150, 170, 0.3); font-size: 10px; -unity-text-align: center;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

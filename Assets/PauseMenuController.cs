@@ -1,101 +1,98 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using Cursor = UnityEngine.Cursor;
-
+using Random = UnityEngine.Random;
 
 public class PauseMenuController : MonoBehaviour
 {
     [Header("Scene Settings")]
-    [SerializeField] private string mainMenuSceneName = "MainMenu";  // Ime tvojega glavnega menija
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
+    [Header("Options Menu")]
+    [SerializeField] private GameObject optionsMenuObject;
     
-    private UIDocument uiDocument;
-    private bool isPaused = false;
+    
     private PlayerInputActions inputActions;
+    
+    private VisualElement pauseMenuRoot;
+    private bool isPaused = false;
+    
+    // Store original button colors for flicker effect
+    private System.Collections.Generic.Dictionary<Button, Color> originalButtonColors = new System.Collections.Generic.Dictionary<Button, Color>();
     
     private void Start()
     {
         inputActions = new PlayerInputActions();
         inputActions.Enable();
-        
-        uiDocument = GetComponent<UIDocument>();
-        
-        // Na začetku skrij pause menu
-        uiDocument.enabled = false;
-        
-        // Odkleni miško (če je bila zaklenjena)
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-    
-    private void Update()
-    {
-        // Preveri če je pritisnjen ESC
-        if (inputActions.Player.Exit.WasPressedThisFrame())
-        {
-            if (isPaused)
-                ResumeGame();
-            else
-                PauseGame();
-        }
     }
     
     private void OnEnable()
     {
+        var uiDocument = GetComponent<UIDocument>();
         if (uiDocument == null)
-            uiDocument = GetComponent<UIDocument>();
+        {
+            Debug.LogError("No UIDocument component found on Pause Menu!");
+            return;
+        }
         
-        var root = uiDocument.rootVisualElement;
+        pauseMenuRoot = uiDocument.rootVisualElement;
         
-        Button resumeButton = root.Q<Button>("ResumeButton");
-        Button optionsButton = root.Q<Button>("OptionsButton");
-        Button mainMenuButton = root.Q<Button>("MainMenuButton");
-        Button quitButton = root.Q<Button>("QuitButton");
+        // Initially hide pause menu (starts hidden)
+        pauseMenuRoot.style.display = DisplayStyle.None;
         
+        // Get all buttons
+        Button resumeButton = pauseMenuRoot.Q<Button>("ResumeButton");
+        Button optionsButton = pauseMenuRoot.Q<Button>("OptionsButton");
+        Button mainMenuButton = pauseMenuRoot.Q<Button>("MainMenuButton");
+        Button quitButton = pauseMenuRoot.Q<Button>("QuitButton");
+        
+        // Register click events
         if (resumeButton != null)
-            resumeButton.clicked += ResumeGame;
-        
+            resumeButton.clicked += OnResumeClicked;
+            
         if (optionsButton != null)
-            optionsButton.clicked += OpenOptions;
-        
+            optionsButton.clicked += OnOptionsClicked;
+            
         if (mainMenuButton != null)
-            mainMenuButton.clicked += GoToMainMenu;
-        
+            mainMenuButton.clicked += OnMainMenuClicked;
+            
         if (quitButton != null)
-            quitButton.clicked += QuitGame;
+            quitButton.clicked += OnQuitClicked;
+        
+        // Register hover events for ALL buttons
+        var allButtons = pauseMenuRoot.Query<Button>().ToList();
+        foreach (var button in allButtons)
+        {
+            originalButtonColors[button] = button.style.color.value;
+            button.RegisterCallback<MouseEnterEvent>(OnHorrorHover);
+            button.RegisterCallback<MouseLeaveEvent>(OnHorrorLeave);
+        }
     }
     
-    private void OnDisable()
+    private void Update()
     {
-        var root = uiDocument?.rootVisualElement;
-        if (root == null) return;
-        
-        Button resumeButton = root.Q<Button>("ResumeButton");
-        Button optionsButton = root.Q<Button>("OptionsButton");
-        Button mainMenuButton = root.Q<Button>("MainMenuButton");
-        Button quitButton = root.Q<Button>("QuitButton");
-        
-        if (resumeButton != null)
-            resumeButton.clicked -= ResumeGame;
-        if (optionsButton != null)
-            optionsButton.clicked -= OpenOptions;
-        if (mainMenuButton != null)
-            mainMenuButton.clicked -= GoToMainMenu;
-        if (quitButton != null)
-            quitButton.clicked -= QuitGame;
+        if (inputActions.Player.Exit.WasPressedThisFrame())
+        {
+            TogglePause();
+        }
     }
     
-    private void PauseGame()
+    private void TogglePause()
+    {
+        if (isPaused)
+            ResumeGame();
+        else
+            PauseGame();
+    }
+    
+    public void PauseGame()
     {
         isPaused = true;
-        
-        // Zaustavi čas v igri
         Time.timeScale = 0f;
+        pauseMenuRoot.style.display = DisplayStyle.Flex;
         
-        // Pokaži pause menu
-        uiDocument.enabled = true;
-        
-        // Odkleni miško za kazalec
+        // Show cursor for menu interaction
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         
@@ -105,46 +102,136 @@ public class PauseMenuController : MonoBehaviour
     private void ResumeGame()
     {
         isPaused = false;
-        
-        // Nadaljuj čas v igri
         Time.timeScale = 1f;
+        pauseMenuRoot.style.display = DisplayStyle.None;
         
-        // Skrij pause menu
-        uiDocument.enabled = false;
-        
-        // Zakleni miško nazaj (če imaš FPS kamero)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         
         Debug.Log("Game Resumed");
     }
     
-    private void OpenOptions()
+    // ========== HORROR FLICKER EFFECTS (IDENTICAL TO MAIN MENU) ==========
+    
+    private void OnHorrorHover(MouseEnterEvent evt)
     {
-        Debug.Log("Opening options...");
-        // Tukaj lahko odpreš options menu
-        // Lahko narediš še en UI Document za options
+        var button = evt.target as Button;
+        if (button != null)
+        {
+            StartCoroutine(FlickerButton(button));
+        }
     }
     
-    private void GoToMainMenu()
+    private System.Collections.IEnumerator FlickerButton(Button button)
     {
-        // Najprej nadaljuj čas (pomembno!)
+        float elapsed = 0;
+        Color originalColor = button.style.color.value;
+        
+        while (elapsed < 0.3f)
+        {
+            float intensity = Random.Range(0.7f, 1f);
+            button.style.color = new Color(
+                originalColor.r * intensity,
+                originalColor.g * intensity * 0.5f,
+                originalColor.b * intensity * 0.3f
+            );
+            yield return new WaitForSecondsRealtime(0.05f);
+            elapsed += 0.05f;
+        }
+        
+        button.style.color = originalColor;
+    }
+    
+    private void OnHorrorLeave(MouseLeaveEvent evt)
+    {
+        var button = evt.target as Button;
+        if (button != null)
+        {
+            button.style.color = StyleKeyword.Null;
+            button.style.letterSpacing = StyleKeyword.Null;
+        }
+    }
+    
+    // ========== BUTTON CLICK HANDLERS ==========
+    
+    private void OnResumeClicked()
+    {
+        Debug.Log("Resuming game...");
+        ResumeGame();
+    }
+    
+    private void OnOptionsClicked()
+    {
+        Debug.Log("Opening Options menu from PAUSE menu...");
+    
+        // Hide pause menu (but remember we came from here)
+        gameObject.SetActive(false);
+    
+        // Show options menu
+        if (optionsMenuObject != null)
+        {
+            optionsMenuObject.SetActive(true);
+        
+            // Keep time scale at 0 (paused)
+            // Don't change Time.timeScale here
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+    
+    private void OnMainMenuClicked()
+    {
+        Debug.Log("Returning to main menu...");
+        
+        // Resume time before loading new scene
         Time.timeScale = 1f;
         
-        // Naloži glavni menu sceno
-        SceneManager.LoadScene(mainMenuSceneName);
-        
-        Debug.Log("Returning to Main Menu...");
+        // Load main menu scene
+        if (!string.IsNullOrEmpty(mainMenuSceneName))
+        {
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("Main menu scene name not set in PauseMenuController!");
+        }
     }
     
-    private void QuitGame()
+    private void OnQuitClicked()
     {
         Debug.Log("Quitting game...");
         
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+    
+    private void OnDisable()
+    {
+        // Clean up events to prevent memory leaks
+        if (pauseMenuRoot == null) return;
+        
+        var allButtons = pauseMenuRoot.Query<Button>().ToList();
+        foreach (var button in allButtons)
+        {
+            button.UnregisterCallback<MouseEnterEvent>(OnHorrorHover);
+            button.UnregisterCallback<MouseLeaveEvent>(OnHorrorLeave);
+        }
+        
+        Button resumeButton = pauseMenuRoot.Q<Button>("ResumeButton");
+        Button optionsButton = pauseMenuRoot.Q<Button>("OptionsButton");
+        Button mainMenuButton = pauseMenuRoot.Q<Button>("MainMenuButton");
+        Button quitButton = pauseMenuRoot.Q<Button>("QuitButton");
+        
+        if (resumeButton != null)
+            resumeButton.clicked -= OnResumeClicked;
+        if (optionsButton != null)
+            optionsButton.clicked -= OnOptionsClicked;
+        if (mainMenuButton != null)
+            mainMenuButton.clicked -= OnMainMenuClicked;
+        if (quitButton != null)
+            quitButton.clicked -= OnQuitClicked;
     }
 }

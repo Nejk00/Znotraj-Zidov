@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class ItemPickUp : MonoBehaviour
 {
@@ -9,6 +11,10 @@ public class ItemPickUp : MonoBehaviour
     public float throwForce = 500f;
     public float pickUpRange = 5f;
     public GameObject heldObj;
+
+    public GameObject InteractionInfo;
+    
+    
     private Rigidbody heldObjRb;
     private bool canDrop = true;
     private int LayerNumber;
@@ -58,6 +64,7 @@ public class ItemPickUp : MonoBehaviour
         
         if (heldObj != null)
         {
+            InteractionInfo.SetActive(true);
             MoveObject();
             
             if (inputActions.Player.Throw.WasPressedThisFrame() && canDrop == true)
@@ -65,6 +72,10 @@ public class ItemPickUp : MonoBehaviour
                 StopClipping();
                 ThrowObject();
             }
+        }
+        else
+        {
+            InteractionInfo.SetActive(false);
         }
     }
     
