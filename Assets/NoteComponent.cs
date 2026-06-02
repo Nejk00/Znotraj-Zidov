@@ -23,10 +23,9 @@ public class NoteComponent : MonoBehaviour
     
     private void Update()
     {
-        if (inputActions.Player.Exit.WasPressedThisFrame())
+        if (inputActions.Player.Interact.WasPressedThisFrame())
         {
             UI.SetActive(false);
-            
         }
     }
 }

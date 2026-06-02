@@ -79,7 +79,7 @@ public class KeycodeComponent : MonoBehaviour
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-            if (inputActions.Player.Exit.WasPressedThisFrame())
+            if (inputActions.Player.Interact.WasPressedThisFrame())
             {
                 Close();
             }

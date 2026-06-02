@@ -15,6 +15,7 @@ public class FlashLight : MonoBehaviour
         toggle = false;
         inputActions = new PlayerInputActions();
         inputActions.Enable();
+        this.enabled = false;
     }
 
     void toggleFlashLight()

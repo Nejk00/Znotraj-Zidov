@@ -25,7 +25,8 @@ public class SlidingBookshelf : MonoBehaviour
         if (isMoving) return;
         
         if (isOpen)
-            StartCoroutine(SlideTo(closedPosition));
+            //StartCoroutine(SlideTo(closedPosition));
+            return;
         else
             StartCoroutine(SlideTo(openPosition));
             

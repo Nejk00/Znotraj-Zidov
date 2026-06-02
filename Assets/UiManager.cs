@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 
 public class UiManager : MonoBehaviour
@@ -6,6 +7,7 @@ public class UiManager : MonoBehaviour
     [SerializeField] private PlayerLook LookScript;
     [SerializeField] private PlayerMove MoveScript;
     [SerializeField] private PlayerRaycast RaycastScript;
+    [SerializeField] private ItemPickUp ItemPickUpScript;
 
     private void OnDisable()
     {
@@ -24,6 +26,11 @@ public class UiManager : MonoBehaviour
         if (RaycastScript != null)
         {
             RaycastScript.enabled = true;
+        }
+
+        if (ItemPickUpScript != null)
+        {
+            ItemPickUpScript.enabled = true;
         }
         
         
@@ -46,6 +53,11 @@ public class UiManager : MonoBehaviour
         if (RaycastScript != null)
         {
             RaycastScript.enabled = false;
+        }
+
+        if (ItemPickUpScript != null)
+        {
+            ItemPickUpScript.enabled = false;
         }
     }
 

@@ -17,6 +17,7 @@ public class PlayerRaycast : MonoBehaviour
     public makeInteractable face;
     public TextMeshProUGUI InteractionPrompt;
     public GameObject leftClick;
+    public FlashLight flashLightScript;
     
     private ItemPickUp itemPickUp;
     private string Text = "Press[E] to interact";
@@ -135,6 +136,9 @@ public class PlayerRaycast : MonoBehaviour
                     itemPickUp.heldObj.gameObject.name == "hammer")
                 {
                     Destroy(hit.collider.gameObject);
+                    AnimateHammer hammer = itemPickUp.heldObj.gameObject.GetComponent<AnimateHammer>();
+                    hammer.playAnim();
+                    
                 }
 
                 if (hit.collider.gameObject.transform.parent.gameObject.name != null)
@@ -155,6 +159,15 @@ public class PlayerRaycast : MonoBehaviour
                     {
                         print("plunger");
                         plunger.ApplyPlungerForce(hit.collider.gameObject);
+                    }
+                }
+
+                if (hit.collider.gameObject.CompareTag("battery"))
+                {
+                    if (inputActions.Player.Interact.WasPressedThisFrame())
+                    {
+                        Destroy(hit.collider.gameObject);
+                        flashLightScript.enabled = true;
                     }
                 }
 

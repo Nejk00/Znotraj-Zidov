@@ -9,6 +9,7 @@ TagManager:
   - keypad
   - Plank
   - Screw
+  - battery
   layers:
   - Default
   - TransparentFX

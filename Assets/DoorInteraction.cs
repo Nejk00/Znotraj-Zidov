@@ -9,7 +9,10 @@ public class DoorInteraction : MonoBehaviour
     public bool isLockedByKeycode;
     public GameObject requiredKey;
     public GameObject enemy = null;
+    public GameObject player = null;
     public float enemyOpenDistance;
+    public bool AutoClose = false;
+    public float AutoCloseDistance;
     
     [Header("Animation Settings")] public float openSpeed = 2f;
     public float openAngle = 90f;
@@ -17,9 +20,8 @@ public class DoorInteraction : MonoBehaviour
     private Quaternion closedRotation;
     private Coroutine currentAnimation;
     private bool openning = false;
-    
 
-    private void Update()
+    private void EnemyOpenDoor()
     {
         float distance = Vector3.Distance(enemy.transform.position, transform.position);
         openning = (distance < enemyOpenDistance)? true:false;
@@ -27,7 +29,12 @@ public class DoorInteraction : MonoBehaviour
         {
             TryOpenClose(-enemy.transform.rotation.eulerAngles.y, null);
             openning = false;
-        }
+        } 
+    }
+    private void Update()
+    {
+        EnemyOpenDoor();
+        AutoCloseDoor();
     }
 
     void Start()
@@ -122,4 +129,18 @@ public class DoorInteraction : MonoBehaviour
         
         transform.parent.localRotation = originalRot;
     }
+
+    private void AutoCloseDoor()
+    {
+        if (AutoClose)
+        { 
+            float distance = Vector3.Distance(player.transform.position, transform.position);
+            bool close = (distance > AutoCloseDistance)? true:false;
+            if (close && isOpen)
+            {
+                TryOpenClose(player.transform.rotation.eulerAngles.y, null);
+            }
+        }
+    }
+    
 }
