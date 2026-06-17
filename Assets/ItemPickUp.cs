@@ -15,6 +15,7 @@ public class ItemPickUp : MonoBehaviour
     public GameObject heldFlashlight; // Left hand flashlight
 
     public GameObject InteractionInfo;
+    public GameObject flashLightText;
     
     private Rigidbody heldObjRb;
     private Rigidbody flashlightRb;
@@ -92,6 +93,8 @@ public class ItemPickUp : MonoBehaviour
         {
             MoveFlashlight();
         }
+        
+        activateFlashLight();
     }
     
     void PickUpObject(GameObject pickUpObj)
@@ -155,7 +158,7 @@ public class ItemPickUp : MonoBehaviour
             FlashLight flashlightScript = heldFlashlight.GetComponent<FlashLight>();
             if (flashlightScript != null)
             {
-                flashlightScript.enabled = true;
+                //flashlightScript.enabled = true;
             }
         
             hasFlashlight = true;
@@ -336,6 +339,18 @@ public class ItemPickUp : MonoBehaviour
         if (hits.Length > 1)
         {
             heldObj.transform.position = transform.position + new Vector3(0f, -0.5f, 0f);
+        }
+    }
+
+    void activateFlashLight()
+    {
+        if (heldFlashlight != null && heldObj.name == "battery")
+        {
+            Destroy(heldObj);
+            heldObj = null;
+            FlashLight flashLightScript = heldFlashlight.GetComponent<FlashLight>();
+            flashLightScript.enabled = true;
+            flashLightText.SetActive(true);
         }
     }
 }

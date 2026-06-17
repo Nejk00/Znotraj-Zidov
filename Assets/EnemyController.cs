@@ -25,11 +25,11 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float patrolSpeed = 2f;    // Slow walking speed
     [SerializeField] private float chaseSpeed = 5f; 
 
-    private float patrolWaitTime = 3f;
+    private float patrolWaitTime = 2f;
     private float stopAtDistance = 1f;
     public float detectionRange = 5f;
     public float viewAngle = 90f;
-    private float lostPlayerTime = 3f;
+    private float lostPlayerTime = 2f;
 
     private float footstepTimer;
     private NavMeshAgent _agent;

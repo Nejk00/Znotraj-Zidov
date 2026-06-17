@@ -18,8 +18,9 @@ public class PlayerRaycast : MonoBehaviour
     public TextMeshProUGUI InteractionPrompt;
     public GameObject leftClick;
     public FlashLight flashLightScript;
+    public TextMeshProUGUI displayText;
     
-    private ItemPickUp itemPickUp;
+    private ItemPickUp itemPickUp = null;
     private string Text = "Press[E] to interact";
     
     
@@ -136,8 +137,8 @@ public class PlayerRaycast : MonoBehaviour
                     itemPickUp.heldObj.gameObject.name == "hammer")
                 {
                     Destroy(hit.collider.gameObject);
-                    AnimateHammer hammer = itemPickUp.heldObj.gameObject.GetComponent<AnimateHammer>();
-                    hammer.playAnim();
+                    HammerHit hammer = itemPickUp.heldObj.gameObject.GetComponent<HammerHit>();
+                    hammer.HitOnce();
                     
                 }
 
@@ -151,27 +152,7 @@ public class PlayerRaycast : MonoBehaviour
                         Destroy(hit.collider.gameObject.transform.parent.gameObject);
                     }
                 }
-
-                if (itemPickUp.heldObj.gameObject.name == "plunger")
-                {
-                    plungerComponent plunger = itemPickUp.heldObj.gameObject.GetComponent<plungerComponent>();
-                    if (inputActions.Player.Interact.WasPressedThisFrame())
-                    {
-                        print("plunger");
-                        plunger.ApplyPlungerForce(hit.collider.gameObject);
-                    }
-                }
-
-                if (hit.collider.gameObject.CompareTag("battery"))
-                {
-                    if (inputActions.Player.Interact.WasPressedThisFrame())
-                    {
-                        Destroy(hit.collider.gameObject);
-                        flashLightScript.enabled = true;
-                    }
-                }
-
-                    
+                
             }
             else
             {
